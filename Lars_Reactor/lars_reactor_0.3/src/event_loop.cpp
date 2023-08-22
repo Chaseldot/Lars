@@ -6,7 +6,7 @@
 
 // 构造，初始化epoll堆
 event_loop::event_loop() {
-    // flag=0 等价于epll_craete
+    // flag=0 等价于epoll_create
     _epfd = epoll_create1(0);
     if (_epfd == -1) {
         fprintf(stderr, "epoll_create error\n");
