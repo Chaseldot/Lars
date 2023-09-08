@@ -130,7 +130,7 @@ int tcp_conn::send_message(const char* data, int msglen, int msgid){
     
     //如果现在已经数据都发送完了，那么是一定要激活写事件的
         //如果有数据，说明数据还没有完全写完到对端，那么没必要再激活等写完再激活
-    bool active_epollout = obuf.length() > 0 ? true : false;
+    bool active_epollout = obuf.length() == 0 ? true : false;
 
     //1. 先封装message消息头
     msg_head head;
