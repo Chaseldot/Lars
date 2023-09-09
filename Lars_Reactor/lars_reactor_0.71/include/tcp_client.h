@@ -1,0 +1,79 @@
+#pragma once
+
+#include "io_buf.h"
+#include "event_loop.h"
+#include "message.h"
+#include "net_connection.h"
+
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+
+class tcp_client;
+typedef void msg_callback(const char *data, uint32_t len, int msgid, net_connection* conn, void *user_data);
+
+class tcp_client: public net_connection{
+    public:
+        //初始化客户端套接字
+        tcp_client(event_loop* loop, const char* ip, unsigned short port, const char* name);
+        //发送message方法
+        int send_message(const char* data, int msglen, int msgid);
+        //创建链接
+        void do_connect();
+        //处理读业务
+        int do_read();
+        //处理写业务
+        int do_write();
+        //清理链接资源
+        void clean_conn();
+
+        ~tcp_client();
+
+        // //设置业务处理回调函数
+        // void set_msg_callback(msg_callback* msg_cb){
+        //     this->_msg_callback = msg_cb;
+        // }
+
+        //----- 链接创建/销毁回调Hook ----
+        //设置链接的创建hook函数
+        void set_conn_start(conn_callback cb, void *args = NULL) {
+            _conn_start_cb = cb;
+            _conn_start_cb_args = args;
+        }
+
+        //设置链接的销毁hook函数
+        void set_conn_close(conn_callback cb, void *args = NULL) {
+            _conn_close_cb = cb;
+            _conn_close_cb_args = args;
+        }
+        
+        //创建链接之后要触发的 回调函数
+        conn_callback _conn_start_cb;     
+        void * _conn_start_cb_args;
+
+        //销毁链接之前要触发的 回调函数
+        conn_callback _conn_close_cb;
+        void * _conn_close_cb_args;
+        // ---------------------------------
+        bool connected;//链接是否创建成功
+
+        struct sockaddr_in _server_addr;//server端地址
+        io_buf _ibuf;//读缓冲区
+        io_buf _obuf;//写缓冲区
+
+        void add_msg_router(int msgid, msg_callback* cb, void* user_data = nullptr){
+            _router.register_msg_router(msgid, cb, user_data);
+        }
+
+    private:
+        int _sockfd;//客户端套接字
+        socklen_t _addrlen;//server端地址长度
+
+        event_loop* _loop;//客户端的事件处理机制
+        const char* _name;//客户端名称 用户记录日志
+
+        msg_callback* _msg_callback;//业务处理回调函数
+
+        msg_router _router;//处理消息的分发路由
+};
