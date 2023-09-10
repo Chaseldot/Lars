@@ -109,3 +109,5 @@
 
 - 代码：[Lars_reactor_0.10](https://github.com/Hz188/Lars/tree/master/Lars_Reactor/lars_reactor_0.10)
 - 主要是支持了UDP通信方式，但没有线程池、只有单线程处理方式
+- 发送数据virtual send_message: data-->msg_head-->obuf-->...
+- 读数据do_read(): ...-->ibuf-->msg_head-->router-->msg_callback
